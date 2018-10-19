@@ -1,7 +1,5 @@
 package sat;
 import java.io.FileWriter;
-
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.io.IOException;
 import java.io.File;
@@ -30,48 +28,36 @@ public class SATSolverTest {
 	
 	// TODO: add the main method that reads the .cnf file and calls SATSolver.solve to determine the satisfiability
     public static void main(String[] args) throws IOException{
-    	File file = new File("F:\\Personal\\Term4\\infoSysProg\\Project-2D-starting\\sampleCNF\\largeSat.cnf");
-        //System.out.println("File read");
+    	String userDirectory = System.getProperty("user.dir");
+    	File file = new File(userDirectory+"\\sampleCNF\\largeSat.cnf");
         Scanner input = new Scanner(file);
-        ArrayList<String> list = new ArrayList<String>();
-
+        ArrayList<String> list = new ArrayList<String>();//a list to store all the lines in the cnf file
+        Boolean startParsing = Boolean.FALSE;
+        sat.formula.Clause myClause = new sat.formula.Clause();
+        sat.formula.Formula myFormula = new sat.formula.Formula();
+        ArrayList<sat.env.Variable> variables = new ArrayList<sat.env.Variable>();
+        ArrayList<sat.formula.PosLiteral> posLiterals = new ArrayList<sat.formula.PosLiteral>();//a list to as "positive literal library"
+        ArrayList<sat.formula.NegLiteral> negLiterals = new ArrayList<sat.formula.NegLiteral>();//a list to as "negative literal library"
+      
         while (input.hasNextLine()) {
             list.add(input.nextLine());
         }
-        //System.out.println("list created");
-
         int numberOfLines = list.size();
-
-        Boolean startParsing = Boolean.FALSE;
-
-        //ArrayList<sat.formula.Clause> clauses = new ArrayList<sat.formula.Clause>();
-        sat.formula.Formula myFormula = new sat.formula.Formula();
-        ArrayList<sat.env.Variable> variables = new ArrayList<sat.env.Variable>();
-        ArrayList<sat.formula.PosLiteral> posLiterals = new ArrayList<sat.formula.PosLiteral>();
-        ArrayList<sat.formula.NegLiteral> negLiterals = new ArrayList<sat.formula.NegLiteral>();
-        //ArrayList<sat.formula.Literal> oneClause = new ArrayList<sat.formula.Literal>;
-        sat.formula.Clause myClause = new sat.formula.Clause();
-        
         
         for(int i=0; i<numberOfLines; i++){
             if(list.get(i).length()>0){ //skip empty lines
-                //System.out.println(list.get(i));
-                char a = list.get(i).charAt(0); //for comment lines, a = "c"
+                char a = list.get(i).charAt(0); 
                 String preamble = Character.toString(a);
 
                 if(preamble.equals("p")){  //problem line
                     String[] splitP = list.get(i).split("\\s+");
-
-                    //read info from problem line
-                    String type = splitP[1];
+                    //reading variable number info from problem line
                     int numOfVariables = Integer.parseInt(splitP[2]);
-                    int numOfClauses = Integer.parseInt(splitP[3]);
 
-                    //add variables & posLiterals & negLiterals
+                    //adding possible variables & posLiterals & negLiterals to our arrayList
                     for(int j=0; j<numOfVariables; j++){
                     	sat.env.Variable v = new sat.env.Variable(""+(j+1));
-                    	//System.out.println("v:"+v);
-                        variables.add(v); //这里！+j+1！！！
+                        variables.add(v); 
                         posLiterals.add(sat.formula.PosLiteral.make(variables.get(j)));
                         negLiterals.add(sat.formula.NegLiteral.make(variables.get(j)));
                     }
@@ -81,7 +67,6 @@ public class SATSolverTest {
                     tempString = tempString.trim();
                     String[] temp = tempString.split("\\s+");
                     for(String x:temp){
-                    	//if(x.equals("")==false) {
                     	int currentLiteral = Integer.parseInt(x);
                         if(currentLiteral<0){
                             myClause = myClause.add(negLiterals.get((-1)*currentLiteral-1));
@@ -89,22 +74,14 @@ public class SATSolverTest {
                             myClause = myClause.add(posLiterals.get(currentLiteral-1));
                         } else{
                         }
-//                    	}else {
-//                    		
-//                    	}
                     }
                     myFormula = myFormula.addClause(myClause);
-                    myClause = new sat.formula.Clause();
+                    myClause = new sat.formula.Clause();//initialize myClause after putting it into myFormula
                 }
             }
-
         }
-        posLiterals = new ArrayList<sat.formula.PosLiteral>();
-        negLiterals = new ArrayList<sat.formula.NegLiteral>();
-        String file_name = "F:\\Personal\\Term4\\infoSysProg\\Project-2D-starting\\sampleCNF\\BoolAssignment.txt";
-        Writer data = new FileWriter(file_name, false);
-        
-        
+        String file_name = userDirectory+"\\sampleCNF\\BoolAssignment.txt";
+        Writer data = new FileWriter(file_name, false);//output environment to .txt file if satisfiable
         System.out.println("SAT solver starts!");
         long started = System.nanoTime();
         Environment result = SATSolver.solve(myFormula);
@@ -114,26 +91,26 @@ public class SATSolverTest {
         	System.out.println("not satisfiable");
         }else {
         	System.out.println("satisfiable");
-        	//System.out.println(result);
         	String resultString = result.toString();
         	System.out.println(resultString);
         	int ii = resultString.length()-1;
         	String outputLineNum = "";
         	String outputLineBool = "";
         	String outputLine = "";
+//        	Read the environment string from last to first character, if encounter
+//        	a Letter,put the letter into the outputLineBool string, if encounter a Digit, put 
+//        	it into the outputLineNum string, if encounter a comma, put the content in 
+//        	outputLineNum and outputLineBool into the outputLine string and write the line
+//        	to our .txt file, clear the three strings to "" and continue scanning next character.
         	while (ii>=0) {
-        		//System.out.println("hay");
         		if (Character.toString(resultString.charAt(ii)).equals(",")) {
-        			//System.out.println("hay1");
         			outputLine = outputLineNum+":"+outputLineBool+"\n";
-        			//System.out.println(outputLine);
         			data.write(outputLine);
         			outputLine = "";
         			outputLineNum = "";
         			outputLineBool ="";
         			ii--;
         		}else {
-        			//System.out.println("hay else");
 	    			if (Character.isDigit(resultString.charAt(ii))) {
 	    				outputLineNum = Character.toString(resultString.charAt(ii))+outputLineNum;
 	    				ii--;
@@ -148,6 +125,7 @@ public class SATSolverTest {
         	}
         }
         data.close();
+        input.close();
         System.out.println("Time:"+(timeTaken/1000000.0)+"ms");
     }
 	
