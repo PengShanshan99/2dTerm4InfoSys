@@ -12,6 +12,7 @@ import sat.formula.PosLiteral;
  * A simple DPLL SAT solver. See http://en.wikipedia.org/wiki/DPLL_algorithm
  */
 public class SATSolver {
+	static int counter = 0;
     /**
      * Solve the problem using a simple version of DPLL with backtracking and
      * unit propagation. The returned environment binds literals of class
@@ -26,7 +27,6 @@ public class SATSolver {
         ImList<Clause> formulaClauses = formula.getClauses();
         Environment environment = new Environment();
         return solve(formulaClauses,environment);
-
         //throw new RuntimeException("not yet implemented.");
     }
 
@@ -43,22 +43,22 @@ public class SATSolver {
      *         or null if no such environment exists.
      */
     private static Environment solve(ImList<Clause> clauses, Environment env) {
+    	counter += 1;
         // TODO: implement this.
         if (clauses.size()==0)
-        {return env;} //env has no clauses
-
+        {
+        	return env;} //env has no clauses, return this environment that make the formula be true
         Clause smallest_Clause = clauses.first();
         for(Clause i: clauses) {
-
-            if (i.isEmpty()) { //Check for an empty clause
+            if (i.isEmpty()) { //if there is empty class, it is unsatisfiable, return null
                 return null;
             }
-            if (smallest_Clause.size()>i.size()) { //track the smallest clause
+            if (smallest_Clause.size()>i.size()) { //keep track the smallest clause
                 smallest_Clause = i;
             }
         }
         Literal literal = smallest_Clause.chooseLiteral(); // Randomly picking a literal
-        if (smallest_Clause.isUnit()) { //if smallest only contains 1 literal
+        if (smallest_Clause.isUnit()) { //if smallest only contains 1 literal, set that literal to be true
             if(literal instanceof PosLiteral) {
                 Environment new_env_true = env.putTrue(literal.getVariable());
                 return solve(substitute(clauses,literal), new_env_true);
@@ -68,27 +68,19 @@ public class SATSolver {
                 return solve(substitute(clauses,literal), new_env_false);
                 }
         }
-        else {
+        else {//for multi-literal clause, put the randomly picked literal to be true, if not successful trace back and try false
             Environment new_env_true = env.putTrue(literal.getVariable());
             ImList<Clause> new_temp_clauses = substitute(clauses, literal);
-
             Environment possible_solution = solve(new_temp_clauses,new_env_true);
             if (possible_solution == null){
                 Environment new_env_false = env.putFalse(literal.getVariable());
                 return solve(substitute(clauses,literal.getNegation()), new_env_false);
-
             }
             else{
                 return possible_solution;
             }
 
         }
-
-
-
-
-
-
         //throw new RuntimeException("not yet implemented.");
     }
 
@@ -108,11 +100,11 @@ public class SATSolver {
         ImList<Clause> new_clauses = new EmptyImList<Clause>();
         for (Clause i:clauses) {
             Clause inserted_clause = i.reduce(l);
-            new_clauses.add(inserted_clause);
+            if(inserted_clause!= null) {
+            	new_clauses = new_clauses.add(inserted_clause);
+            }
         }
         return new_clauses;
-
-        //throw new RuntimeException("not yet implemented.");
     }
 
 }
