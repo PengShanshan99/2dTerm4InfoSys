@@ -30,7 +30,7 @@ public class SATSolverTest {
 	
 	// TODO: add the main method that reads the .cnf file and calls SATSolver.solve to determine the satisfiability
     public static void main(String[] args) throws IOException{
-    	File file = new File("F:\\Personal\\Term4\\infoSysProg\\Project-2D-starting\\sampleCNF\\s8Sat.cnf");
+    	File file = new File("F:\\Personal\\Term4\\infoSysProg\\Project-2D-starting\\sampleCNF\\largeSat.cnf");
         //System.out.println("File read");
         Scanner input = new Scanner(file);
         ArrayList<String> list = new ArrayList<String>();
@@ -78,8 +78,10 @@ public class SATSolverTest {
                     startParsing = Boolean.TRUE;
                 } else if (startParsing) {   //start parsing after problem line
                     String tempString = list.get(i);
+                    tempString = tempString.trim();
                     String[] temp = tempString.split("\\s+");
                     for(String x:temp){
+                    	//if(x.equals("")==false) {
                     	int currentLiteral = Integer.parseInt(x);
                         if(currentLiteral<0){
                             myClause = myClause.add(negLiterals.get((-1)*currentLiteral-1));
@@ -87,6 +89,9 @@ public class SATSolverTest {
                             myClause = myClause.add(posLiterals.get(currentLiteral-1));
                         } else{
                         }
+//                    	}else {
+//                    		
+//                    	}
                     }
                     myFormula = myFormula.addClause(myClause);
                     myClause = new sat.formula.Clause();
